@@ -1,18 +1,3 @@
-# gomw - go-http-middleware
-
-A framework for fasten creating Go HTTP Middleware
-
-## Get it
-
-```shell
-$ go get -u github.com/vchitai/gomw
-```
-
-## Usage
-
-Implement a simple authenticate middleware with gomw, find it at [example](./example)
-
-```go
 package main
 
 import (
@@ -29,7 +14,7 @@ func isValidToken(token string) bool {
 	if token == AccessToken {
 		return true
 	}
-	return false // 
+	return false //
 }
 
 func main() {
@@ -60,4 +45,3 @@ func main() {
 		log.Fatal(err)
 	}
 }
-```
