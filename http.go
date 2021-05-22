@@ -6,20 +6,7 @@ import (
 	"go.uber.org/zap/buffer"
 )
 
-type HTTPMiddleware interface {
-	WrapHandleFunc(next http.HandlerFunc) http.HandlerFunc
-	WrapHandler(next http.Handler) http.Handler
-}
-
-type httpMiddleware func(next http.HandlerFunc) http.HandlerFunc
-
-func (h httpMiddleware) WrapHandleFunc(next http.HandlerFunc) http.HandlerFunc {
-	return h(next)
-}
-
-func (h httpMiddleware) WrapHandler(next http.Handler) http.Handler {
-	return h(next.ServeHTTP)
-}
+type HTTPMiddleware func(next http.Handler) http.Handler
 
 var _ http.ResponseWriter = &copyWriter{}
 var _ HTTPResponse = &copyWriter{}
@@ -83,50 +70,50 @@ func NewHTTPResponse(body []byte, code int) HTTPResponse {
 	}
 }
 
-func afterMiddleware(after AfterHook) httpMiddleware {
-	return func(next http.HandlerFunc) http.HandlerFunc {
-		return func(writer http.ResponseWriter, request *http.Request) {
+func afterMiddleware(after AfterHook) HTTPMiddleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			var copyWriter = newCopyWriter(writer)
 			defer copyWriter.free()
-			next(copyWriter, request)
+			next.ServeHTTP(copyWriter, request)
 			var resp = after(copyWriter)
 			writer.WriteHeader(resp.Code())
 			_, _ = writer.Write(resp.Body())
-		}
+		})
 	}
 }
 
-func beforeMiddleware(before BeforeHook) httpMiddleware {
-	return func(next http.HandlerFunc) http.HandlerFunc {
-		return func(writer http.ResponseWriter, request *http.Request) {
+func beforeMiddleware(before BeforeHook) HTTPMiddleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			request, ok := before(writer, request)
 			if !ok {
 				return
 			}
 			next.ServeHTTP(writer, request)
-		}
+		})
 	}
 }
 
-func fullyMiddleware(before BeforeHook, after AfterHook) httpMiddleware {
-	return func(next http.HandlerFunc) http.HandlerFunc {
-		return func(writer http.ResponseWriter, request *http.Request) {
+func fullyMiddleware(before BeforeHook, after AfterHook) HTTPMiddleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			request, ok := before(writer, request)
 			if !ok {
 				return
 			}
 			var copyWriter = newCopyWriter(writer)
 			defer copyWriter.free()
-			next(copyWriter, request)
+			next.ServeHTTP(copyWriter, request)
 			var resp = after(copyWriter)
 			writer.WriteHeader(resp.Code())
 			_, _ = writer.Write(resp.Body())
-		}
+		})
 	}
 }
 
-func doNothingMiddleware() httpMiddleware {
-	return func(next http.HandlerFunc) http.HandlerFunc {
+func doNothingMiddleware() HTTPMiddleware {
+	return func(next http.Handler) http.Handler {
 		return next // nothing to do
 	}
 }

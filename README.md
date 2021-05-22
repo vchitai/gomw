@@ -29,7 +29,7 @@ func isValidToken(token string) bool {
 	if token == AccessToken {
 		return true
 	}
-	return false // 
+	return false
 }
 
 func main() {
@@ -47,9 +47,9 @@ func main() {
 	})
 
 	var mux = http.NewServeMux() // create new server
-	mux.Handle("/", authenticateMw.WrapHandleFunc(func(writer http.ResponseWriter, request *http.Request) {
+	mux.Handle("/", authenticateMw(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		_, _ = writer.Write([]byte("Hello world!"))
-	}))
+	})))
 
 	l, err := net.Listen("tcp", ":10080")
 	if err != nil {
