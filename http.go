@@ -34,6 +34,9 @@ func (m *copyWriter) Header() http.Header {
 }
 
 func (m *copyWriter) Code() int {
+	if m.code == 0 {
+		return http.StatusOK
+	}
 	return m.code
 }
 
@@ -60,6 +63,9 @@ func (h *httpResponse) Body() []byte {
 }
 
 func (h *httpResponse) Code() int {
+	if h.code == 0 {
+		return http.StatusOK
+	}
 	return h.code
 }
 
