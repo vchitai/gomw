@@ -1,5 +1,8 @@
 # gomw - go-http-middleware
 
+[![Godoc Reference](https://godoc.org/github.com/vchitai/zapflatencoder?status.svg)](http://godoc.org/github.com/vchitai/zapflatencoder)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vchitai/zap-flat-encoder)](https://goreportcard.com/report/github.com/vchitai/zap-flat-encoder)
+
 A framework for fasten creating Go HTTP Middleware
 
 ## Get it
