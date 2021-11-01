@@ -27,7 +27,7 @@ func main() {
 		writer.WriteHeader(http.StatusUnauthorized)
 		_, _ = writer.Write([]byte(http.StatusText(http.StatusUnauthorized)))
 		return nil, false
-	}, func(resp gomw.HTTPResponse) gomw.HTTPResponse {
+	}, func(resp gomw.HTTPResponse, request *http.Request) gomw.HTTPResponse {
 		return gomw.NewHTTPResponse(resp.Body(), resp.Code()) // do some edit
 	})
 

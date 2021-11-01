@@ -82,7 +82,7 @@ func afterMiddleware(after AfterHook) HTTPMiddleware {
 			var copyWriter = newCopyWriter(writer)
 			defer copyWriter.free()
 			next.ServeHTTP(copyWriter, request)
-			var resp = after(copyWriter)
+			var resp = after(copyWriter, request)
 			writer.WriteHeader(resp.Code())
 			_, _ = writer.Write(resp.Body())
 		})
@@ -111,7 +111,7 @@ func fullyMiddleware(before BeforeHook, after AfterHook) HTTPMiddleware {
 			var copyWriter = newCopyWriter(writer)
 			defer copyWriter.free()
 			next.ServeHTTP(copyWriter, request)
-			var resp = after(copyWriter)
+			var resp = after(copyWriter, request)
 			writer.WriteHeader(resp.Code())
 			_, _ = writer.Write(resp.Body())
 		})
@@ -129,7 +129,7 @@ type HTTPResponse interface {
 	Code() int
 }
 type BeforeHook func(writer http.ResponseWriter, request *http.Request) (*http.Request, bool)
-type AfterHook func(response HTTPResponse) HTTPResponse
+type AfterHook func(response HTTPResponse, request *http.Request) HTTPResponse
 
 func NewHTTPMiddleware(before BeforeHook, after AfterHook) HTTPMiddleware {
 	if before == nil && after == nil {
