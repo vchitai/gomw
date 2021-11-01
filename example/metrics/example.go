@@ -43,17 +43,13 @@ func LatencyRecordingHTTPMiddleware(operation string) gomw.HTTPMiddleware {
 	})
 }
 
-func helloWorld() http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		_, _ = writer.Write([]byte("Hello world!"))
-	}
-}
-
 func main() {
 	prometheus.MustRegister(httpLatencyHistogram)
 	var mux = http.NewServeMux() // create new server
 	mux.Handle("/metrics", promhttp.Handler())
-	mux.Handle("/", LatencyRecordingHTTPMiddleware("hello world")(helloWorld()))
+	mux.Handle("/", LatencyRecordingHTTPMiddleware("hello world")(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		_, _ = writer.Write([]byte("Hello world!"))
+	})))
 
 	l, err := net.Listen("tcp", ":10080")
 	if err != nil {

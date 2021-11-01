@@ -1,29 +1,39 @@
 package main
 
 import (
+	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
+	"strings"
 
 	"github.com/vchitai/gomw/common"
 )
 
 type claim struct {
-	UserID   string `json:"user_id"`
-	UserName string `json:"user_name"`
+	UserID       string `json:"user_id"`
+	UserPassword string `json:"user_password"`
 }
 
 type authClaimKey struct{}
 
 func claimFromToken(token string) (*claim, error) {
-	var claim claim
-	if err := json.Unmarshal([]byte(token), &claim); err != nil {
-		return nil, fmt.Errorf("decode token error %w", err)
+	var decodedToken []byte
+	if _, err := base64.NewDecoder(base64.StdEncoding, bytes.NewBufferString(token)).Read(decodedToken); err != nil {
+		return nil, err
 	}
-	return &claim, nil
+
+	segments := strings.Split(string(decodedToken), ":")
+	if len(segments) != 2 {
+		return nil, fmt.Errorf("token does not have valid number of segments")
+	}
+	return &claim{
+		UserID:       segments[0],
+		UserPassword: segments[1],
+	}, nil
 }
 
 func ExtractClaimFromToken(request *http.Request) (*http.Request, error) {
